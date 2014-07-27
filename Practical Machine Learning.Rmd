@@ -83,14 +83,19 @@ confusionMatrix(vdate$classe,predict(modelFit,newdata=vdate[,-53]))
 
 
 ### Generate out of sample error
+
 ###Step 5 - Test model
 ``` {r echo=TRUE}
 filename<-"./Data/pml-testing.csv"
+#Get Data
 dataT<-read.csv(filename,stringsAsFactors=F)
+#Clean Data
 test<-cleandata(dataT)
+#Add Outcome Variable to Test set
 test$problem_id<-as.factor(dataT[,160])
-#confusionMatrix(test$classe,predict(modelFit,test))
+#Create a prdiction
 x<-predict(modelFit,newdata=test)
+#Test those predictions againest the 20 predictions submitted to Course as correct.
 good<-as.factor(c("B","A","B","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B"))
 confusionMatrix(good,x)
 ```
