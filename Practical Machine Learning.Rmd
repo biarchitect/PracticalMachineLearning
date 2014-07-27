@@ -17,6 +17,8 @@ The model will then be tested against a test dataset downloaded from here;
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
+##Conclusion
+
 The model produced was efficient in that it took a little over 3 minutes to build.
 The training set was built from 50% of the training data.
 It contains 56 variables of interest and was 100% accurate on both the validation and test datasets.
@@ -32,25 +34,28 @@ data<-read.csv(filename,header=T,stringsAsFactors=F)
 ###Step 2 - Data cleansing
 Remove all variables that do not contain a high percentage of data. Actually all variables that contain at least one NA observation.
 ``` {r echo=TRUE}
-temp<-data
-#The first four variables are row counts, timestamps, who did the exercise and the window.
-#Remove them as they add nothing to the predicive goal of the model.
-temp<-temp[,-1:-7]
-#Make any empty cells NA
-temp[temp==""]<-NA
-#Make all bad Math cells NA
-temp[temp=="#DIV/0!"]<-NA
-
-#Get rid of all variables that are ALL NA
-temp<-temp[,!apply(temp,2,function(x) all(is.na(x)))]
-#Remove all variables with less than NApct
-NApct<-1
-m<-dim(temp)[1];x<-1;y<-dim(temp)[2]
-while (x < y){if (sum(!is.na(temp[,x]))/m < NApct) {temp[,x]<-NULL;y<-dim(temp)[2]} else{ x<-x+1}}
-
-temp<-apply(temp[,c(-53)],2,as.numeric)
-temp<-as.data.frame(temp)
-#Put back and make outcome varialbe a factor
+cleandata<-function(temp){
+  
+  #The first four variables are row counts, timestamps, who did the exercise and the window.
+  #Remove them as they add nothing to the predicive goal of the model.
+  temp<-temp[,-1:-7]
+  #Make any empty cells NA
+  temp[temp==""]<-NA
+  #Make all bad Math cells NA
+  temp[temp=="#DIV/0!"]<-NA
+  
+  #Get rid of all variables that are ALL NA
+  temp<-temp[,!apply(temp,2,function(x) all(is.na(x)))]
+  #Remove all variables with less than NApct of real data.
+  NApct<-1
+  m<-dim(temp)[1];x<-1;y<-dim(temp)[2]
+  while (x < y){if (sum(!is.na(temp[,x]))/m < NApct) {temp[,x]<-NULL;y<-dim(temp)[2]} else{ x<-x+1}}
+  
+  temp<-apply(temp[,c(-53)],2,as.numeric)
+  temp<-as.data.frame(temp)
+  return(temp)
+}
+temp<-cleandata(data)
 temp$classe<-as.factor(data[,160])
 
 ```
@@ -79,24 +84,17 @@ confusionMatrix(vdate$classe,predict(modelFit,newdata=vdate[,-53]))
 
 ### Generate out of sample error
 ###Step 5 - Test model
-##Conclusion
-
-
-
-
-
-
-
-
-
-```{r}
-summary(cars)
+``` {r echo=TRUE}
+filename<-"./Data/pml-testing.csv"
+dataT<-read.csv(filename,stringsAsFactors=F)
+test<-cleandata(dataT)
+test$problem_id<-as.factor(dataT[,160])
+#confusionMatrix(test$classe,predict(modelFit,test))
+x<-predict(modelFit,newdata=test)
+good<-as.factor(c("B","A","B","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B"))
+confusionMatrix(good,x)
 ```
+###Citations
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
 
-You can also embed plots, for example:
 
-```{r, echo=FALSE}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
