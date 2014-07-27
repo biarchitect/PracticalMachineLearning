@@ -163,11 +163,15 @@ confusionMatrix(vdate$classe,predict(modelFit,newdata=vdate[,-53]))</code></pre>
 <div id="step-5---test-model" class="section level3">
 <h3>Step 5 - Test model</h3>
 <pre class="r"><code>filename&lt;-&quot;./Data/pml-testing.csv&quot;
+#Get Data
 dataT&lt;-read.csv(filename,stringsAsFactors=F)
+#Clean Data
 test&lt;-cleandata(dataT)
+#Add Outcome Variable to Test set
 test$problem_id&lt;-as.factor(dataT[,160])
-#confusionMatrix(test$classe,predict(modelFit,test))
+#Create a prdiction
 x&lt;-predict(modelFit,newdata=test)
+#Test those predictions againest the 20 predictions submitted to Course as correct.
 good&lt;-as.factor(c(&quot;B&quot;,&quot;A&quot;,&quot;B&quot;,&quot;A&quot;,&quot;A&quot;,&quot;E&quot;,&quot;D&quot;,&quot;B&quot;,&quot;A&quot;,&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;B&quot;,&quot;A&quot;,&quot;E&quot;,&quot;E&quot;,&quot;A&quot;,&quot;B&quot;,&quot;B&quot;,&quot;B&quot;))
 confusionMatrix(good,x)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
