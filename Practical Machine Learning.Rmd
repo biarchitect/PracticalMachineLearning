@@ -8,8 +8,9 @@ output: html_document
 ##Executive Summary
 The goal of this project is to predict the manner in which a group of people did certain exercises.
 We will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants as they exercise.
-Random Forest function was used to build a prediction model.
+The Random Forest algorithm found in the randomForest library was used to build a prediction model. The model was evaluated using the customMatrix and predict functions from the caret library.
 The data was downloaded from here;
+
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv.
 
 This data will be cleansed and partitioned into training and validation sets in order to build an efficient and accurate prediction model.
@@ -19,11 +20,13 @@ https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 ##Conclusion
 
-The model produced was efficient in that it took a little over 3 minutes to build.
-The training set was built from 50% of the training data.
-It contains 56 variables of interest and was 100% accurate on both the validation and test datasets.
-The Out of sample error was very small. THe model built resulted in an accuracy of 0.9925 within a confidence interval of (0.9905, 0.9941) with a p-value of 0. 
+The training set was built from 50% of the training data with the other 50% for validation.  This Random Forest model was used for the test submission part of the project.
+I then decided to introduce as much bias as possible and so built a model with 0.05% of the data. This reduced the accuracy of the model to 89%. Still pretty good considering the model was trained on less than 1000 observations. This led me to believe the model was good enough.
+The model contains 52 variables of interest and was 99.25% accurate on both the validation and 100% accurate on the limited test dataset after training on 50% of the training data. The out of sample error was very small; 34/9810 = 0.0035.
+The model produced was efficient in that it took a less than 3 minutes to build.
+The model was extremely accurate. The accuracy was 0.9925 within a confidence interval of (0.9905, 0.9941) with a p-value of approximately 0. 
 The model was 100% accurate againest the 20 test cases.
+I fully expected to have to employ a variable reduction strategy specifically PCA but the model built quickly and accurately and therefore a further reduction in variables was not necessary. I also expected that my variable pruning was way too agressive but the model results were again such that it was not necessary. 
 
 ##Methodology
 ###Step 1 - Download the data
@@ -33,6 +36,7 @@ data<-read.csv(filename,header=T,stringsAsFactors=F)
 ```
 ###Step 2 - Data cleansing
 Remove all variables that do not contain a high percentage of data. Actually all variables that contain at least one NA observation.
+ 
 ``` {r echo=TRUE}
 cleandata<-function(temp){
   
@@ -61,12 +65,14 @@ temp$classe<-as.factor(data[,160])
 ```
 
 ###Step 3 - Partition the cleansed dataset
+
+
 ``` {r echo=TRUE}
 library(caret)
 set.seed(658)
 #Partition 50/50
 part<-0.50
-training<-createDataPartition(temp$classe, p = .50)[[1]]
+training<-createDataPartition(temp$classe, p = part)[[1]]
 
 train<-temp[training,]
 vdate<-temp[-training,]
@@ -81,10 +87,8 @@ modelFit<-randomForest(classe~.,data=train)
 confusionMatrix(vdate$classe,predict(modelFit,newdata=vdate[,-53]))
 ```
 
-
-### Generate out of sample error
-
 ###Step 5 - Test model
+
 ``` {r echo=TRUE}
 filename<-"./Data/pml-testing.csv"
 #Get Data
